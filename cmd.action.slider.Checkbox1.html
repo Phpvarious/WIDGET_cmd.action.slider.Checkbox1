@@ -1,0 +1,166 @@
+<div class="cmd cmd-widget" data-type="action" data-subtype="slider" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#">
+  <!--
+    Base du widget récuperé sur le community :
+      https://community.jeedom.com/t/reveil-sous-jeedom-par-virtuel-et-widget/84693
+    
+    Auteur        : Phpvarious
+    Mise à jour   : 24/02/2023 => création
+                    08/03/2023 => Compatibilité V4.2 V4.3 V4.4
+    Lien          : https://phpvarious.github.io/documentation/widget/fr_FR/action/slider/WIDGET_cmd.action.slider.Checkbox1  
+  -->  
+  <span class="cmdName title #hide_name#">#valueName#</span>
+  <div class="mycontent#id#">
+    <div class="widgetCheckbox#id#">
+      <input class="toggle#uid#" type="checkbox" id="checkbox#id#" />
+      <label for="checkbox#id#" class="binaryCheckbox#id#"></label>
+  </div>
+  </div>
+  <div class="timeCmd label label-default #value_history#" data-type="info" data-cmd_id="#value_id#"></div>
+  <template>
+    <div>effect : Effet sur la checkbox. (Ex: 1 | Défaut : 0)</div>
+    <div>borderColor : Couleur contour de la checkBox. (Ex: red, #ffffff | Défaut : #C3C3C3)</div>
+    <div>borderColorOn : Couleur contour lorsque la valeur vaut 1 [Exemple : #ffffff, green ...]. Par défaut la valeur vaut 'borderColor'</div>
+    <div>background : Couleur de fond de la checkBox. (Ex: red, #ffffff | Défaut : transparent)</div>
+    <div>backgroundIfOn : Couleur de fond lorsque la valeur vaut 1 [Exemple : #ffffff, green ...]. Par défaut la valeur vaut 'background'</div>
+    <div>radius : défini les coins arrondis (Ex : 5 | Défaut : 0)</div>
+    <div>checkColor : Couleur "V" de la checkbox. (Ex: red, #ffffff | Défaut : #C3C3C3)</div>
+    <div>time : duration|date (Affiche durée ou date de la valeur)</div>
+    <div>widthCheckbox : Taille de la checkbox. (Ex:20 | Défaut : 17)</div>
+  </template>
+  <script>
+    var debug#id# = ('#debug#' != '#' + 'debug#') ? true : false;
+    var fullJs#id# = false
+    var jeedomVersion#id# = 4.4
+    
+    /* Paramètre optionnels */
+    if ('#effect#' != '#' + 'effect#' && '#effect#' == 1) {
+      document.documentElement.style.setProperty('--width#id#', 1.2)
+      document.documentElement.style.setProperty('--left#id#', 0.1)
+      document.documentElement.style.setProperty('--top#id#', 0)
+    }
+    if ('#borderColor#' != '#' + 'borderColor#') document.documentElement.style.setProperty('--checkboxcolor#id#', '#borderColor#')
+    if ('#borderColorOn#' != '#' + 'borderColorOn#') document.documentElement.style.setProperty('--borderColorOn#id#', '#borderColorOn#')
+    if ('#background#' != '#' + 'background#') document.documentElement.style.setProperty('--checkboxBackground#id#', '#background#')
+    if ('#backgroundIfOn#' != '#' + 'backgroundIfOn#') document.documentElement.style.setProperty('--colorOn#id#', '#backgroundIfOn#')
+    if ('#radius#' != '#' + 'radius#' && !isNaN('#radius#')) document.documentElement.style.setProperty('--checkBoxRadius#id#', '#radius#'+'%')
+    if ('#widthCheckbox#' != '#' + 'widthCheckbox#' && !isNaN('#widthCheckbox#')) document.documentElement.style.setProperty('--size#id#', '#widthCheckbox#'+'px')
+    if ('#checkColor#' != '#' + 'checkColor#') document.documentElement.style.setProperty('--checkcolor#id#', '#checkColor#')
+    
+    /* Compatibilité V4.2 V4.3 V4.4 */
+    if(typeof jeeFrontEnd === 'undefined') {
+      if (debug#id#) console.log('jeeFrontEnd no exist -> version <= 4.2')
+      jeedomVersion#id# = 4.2
+    }
+    else
+    {
+      jeedomVersion#id# = jeeFrontEnd.jeedomVersion.substr(0, 3)
+      if (debug#id#) console.log('jeeFrontEnd -> version == ' + jeedomVersion#id#)
+    }
+    if (jeedomVersion#id# >= 4.4) {
+      fullJs#id# = true
+      if (debug#id#) console.log('Full Js')
+    }
+    if (typeof jeedom.cmd.addUpdateFunction !== 'function') { // a partir de la 4.3
+      if (debug#id#) console.log('jeedom.cmd.addUpdateFunction no exist')
+      jeedom.cmd.addUpdateFunction = function(id,func) { jeedom.cmd.update[id]=func; }
+    }
+    
+    /* Update */
+    jeedom.cmd.addUpdateFunction('#id#', function(_options) {
+      if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+        if ('#time#' == 'duration' || '#time#' == 'date') {
+          if (fullJs#id#) jeedom.cmd.displayDuration(_options.valueDate, cmd.querySelector('.timeCmd'), '#time#') // jeedom >= v4.4
+          else jeedom.cmd.displayDuration(_options.valueDate, $('.cmd[data-cmd_id=#id#]').find('.timeCmd'), '#time#') // jeedom >= v4.4
+        }
+        if (_options.display_value >= 1 || _options.display_value == 'on' || _options.display_value == '1') cmd.querySelector('input.toggle#uid#').checked = true
+        else cmd.querySelector('input.toggle#uid#').checked = false
+      }
+    })
+    jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#state#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }])
+    
+    /* EventListener */
+    document.querySelector('.cmd[data-cmd_uid=#uid#] .toggle#uid#').addEventListener('click', function(event) {
+      if (this.checked === true) jeedom.cmd.execute({id: '#id#', value: {slider: 1}})
+      else jeedom.cmd.execute({id: '#id#', value: {slider: 0}})
+    })
+  </script>
+  <style>
+    :root {
+      --size#id#: 17px;
+      --colorOn#id#: var(--checkboxBackground#id#);
+      --borderColorOn#id#: var(--checkboxcolor#id#);
+      --checkboxcolor#id#: var(--form-bg-color);
+      --checkboxBackground#id#: var(--form-bg-color);
+      --checkBoxRadius#id#: 0px;
+      --checkcolor#id#: var(--txt-color);
+      --height#id#: 0.375;
+      --width#id#: 0.5625;
+      --left#id#: 0.25;
+      --top#id#: 0.2;
+    }
+    .mycontent#id# {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      min-width: 100%;
+      min-height: 40px;
+      min-height: calc(var(--size35) + 5px);
+    }
+    .widgetCheckbox#id# {
+      position: relative;
+      margin-top: 5px;
+    }
+    input[class=toggle#uid#] {
+      visibility: hidden;
+      margin: 0;
+      width: var(--size#id#) !important;
+      height: var(--size#id#);
+    }
+    label.binaryCheckbox#id# {
+      position:absolute;
+      top:0;
+      left:0;
+      cursor:pointer;
+    }
+    label.binaryCheckbox#id#::before, label.binaryCheckbox#id#::after {
+      content: "";
+      display:inline-block;
+      position:absolute; 
+    }
+    label.binaryCheckbox#id#::before {
+      height:var(--size#id#);
+      width:var(--size#id#);
+      background-color: var(--form-bg-color);
+      border-radius : var(--checkBoxRadius#id#);
+    }
+    [data-coloredicons="1"] label.binaryCheckbox#id#::before {
+      border:2px solid var(--checkboxcolor#id#);
+      background-color: var(--checkboxBackground#id#);
+    }
+    [data-coloredicons="1"] input[type="checkbox"]:checked + label.binaryCheckbox#id#::before {
+      background-color: var(--colorOn#id#);
+      border-color: var(--borderColorOn#id#);
+    }
+    label.binaryCheckbox#id#::after {
+      height:calc(var(--size#id#) * var(--height#id#));
+      width:calc(var(--size#id#) * var(--width#id#));
+      border-left:3px solid var(--txt-color);
+      border-bottom:2px solid var(--txt-color);
+      transform: rotate(-45deg);
+      left:calc(var(--size#id#) * var(--left#id#));
+      top:calc(var(--size#id#) * var(--top#id#));
+    }
+    [data-coloredicons="1"] label.binaryCheckbox#id#::after {
+      border-left:3px solid var(--checkcolor#id#);
+      border-bottom:2px solid var(--checkcolor#id#);
+    }
+    
+    input[type="checkbox"] + label.binaryCheckbox#id#::after {
+      content:none;
+    }
+    input[type="checkbox"]:checked + label.binaryCheckbox#id#::after {
+      content:"";
+    }
+  </style>
+</div>
